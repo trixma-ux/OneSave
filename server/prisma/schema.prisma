@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  // Support both SQLite (dev) and PostgreSQL (prod)
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Utilisateur {
+  id                String   @id @default(cuid())
+  nom               String
+  email             String   @unique
+  motDePasseHashe   String   @map("mot_de_passe_hashe")
+  role              String   @default("utilisateur") // admin, utilisateur
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  projets           Projet[]
+  evenements        Evenement[]
+  notifications     Notification[]
+
+  @@map("utilisateurs")
+}
+
+model Projet {
+  id                String      @id @default(cuid())
+  titre             String
+  description       String?
+  dateDebut         DateTime    @map("date_debut")
+  dateFin           DateTime?   @map("date_fin")
+  statut            String      @default("en_cours") // en_cours, termine, annule, planifie
+  pourcentageAvancement Int     @default(0) @map("pourcentage_avancement")
+  utilisateurId     String      @map("utilisateur_id")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+  utilisateur       Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  evenements        Evenement[]
+  moduleSpecifique  ModuleSpecifique?
+
+  @@map("projets")
+}
+
+model Evenement {
+  id                String      @id @default(cuid())
+  nom               String
+  date              DateTime
+  description       String?
+  projetId          String?     @map("projet_id")
+  utilisateurId     String      @map("utilisateur_id")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+  projet            Projet?     @relation(fields: [projetId], references: [id], onDelete: SetNull)
+  utilisateur       Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+
+  @@map("evenements")
+}
+
+model Notification {
+  id                String      @id @default(cuid())
+  message           String
+  dateEcheance      DateTime?   @map("date_echeance")
+  type              String      @default("info") // info, warning, error, success
+  lu                Boolean     @default(false)
+  utilisateurId     String      @map("utilisateur_id")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+  utilisateur       Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model ModuleSpecifique {
+  id                String      @id @default(cuid())
+  nomModule         String      @map("nom_module")
+  typeProgramme     String      @map("type_programme") // CLAC, IFADEM, GAF
+  details           String?     // JSON string pour stocker des détails spécifiques
+  projetId          String      @unique @map("projet_id")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+  projet            Projet      @relation(fields: [projetId], references: [id], onDelete: Cascade)
+
+  @@map("modules_specifiques")
+}
+

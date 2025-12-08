@@ -1,0 +1,117 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  DATABASE_URL: "file:./prisma/test.db"
+  JWT_SECRET: "test-secret-key-ci"
+  NODE_ENV: "test"
+
+jobs:
+  # Test Backend
+  test-backend:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install root dependencies
+      run: npm ci
+
+    - name: Install server dependencies
+      working-directory: ./server
+      run: npm ci
+
+    - name: Install client dependencies
+      working-directory: ./client
+      run: npm ci
+
+    - name: Build server
+      working-directory: ./server
+      run: npm run build
+
+    - name: Run server tests
+      working-directory: ./server
+      run: npm test
+
+    - name: Run e2e tests
+      working-directory: ./server
+      run: npm run test:e2e
+
+  # Build Frontend
+  build-frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci && cd client && npm ci && cd ..
+
+    - name: Build client
+      working-directory: ./client
+      run: npm run build
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: client-build
+        path: client/build/
+
+  # Deploy to Railway (Backend)
+  deploy-backend:
+    needs: [test-backend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Deploy to Railway
+      env:
+        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      run: |
+        npm i -g @railway/cli
+        railway link ${{ secrets.RAILWAY_PROJECT_ID }}
+        railway up --service backend
+        # Run migrations on deployed database
+        railway run "cd server && npx prisma migrate deploy"
+
+  # Deploy to Vercel (Frontend)
+  deploy-frontend:
+    needs: [build-frontend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Deploy to Vercel
+      env:
+        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      run: |
+        npm i -g vercel
+        vercel --prod --token $VERCEL_TOKEN \
+          -e REACT_APP_API_URL=${{ secrets.API_URL }}
