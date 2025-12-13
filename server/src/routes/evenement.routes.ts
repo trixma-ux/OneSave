@@ -1,9 +1,8 @@
 import express from 'express';
-import { PrismaClient } from '@prisma/client';
 import { authenticateToken, AuthRequest } from '../middleware/auth.middleware';
+import prisma from '../utils/prisma';
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // Obtenir les événements à venir - DOIT ÊTRE AVANT /:id
 router.get('/prochain/upcoming', authenticateToken, async (req: AuthRequest, res) => {

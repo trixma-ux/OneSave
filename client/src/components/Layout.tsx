@@ -6,6 +6,7 @@ import {
   FolderIcon,
   CalendarIcon,
   ChartBarIcon,
+  UserGroupIcon,
   UserIcon,
   ArrowRightOnRectangleIcon,
   Bars3Icon,
@@ -26,6 +27,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { name: 'Tableau de bord', href: '/', icon: HomeIcon },
     { name: 'Projets', href: '/projets', icon: FolderIcon },
     { name: 'Événements', href: '/evenements', icon: CalendarIcon },
+    { name: 'Collaborations', href: '/collaborations', icon: UserGroupIcon },
     { name: 'Rapports', href: '/rapports', icon: ChartBarIcon },
   ];
 

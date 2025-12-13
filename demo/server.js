@@ -1,209 +1,102 @@
 const express = require('express');
-const session = require('express-session');
-const bodyParser = require('body-parser');
+const cors = require('cors');
 const path = require('path');
-const db = require('./js/database');
 
 const app = express();
-const port = 3000;
+const port = process.env.DEMO_PORT || 3001;
 
 // Configuration du middleware
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
-// Session must be initialisée avant la gestion des pages HTML
-app.use(session({
-    secret: 'onesave-demo-secret',
-    resave: false,
-    saveUninitialized: false
-}));
-
-// Protection simple des pages HTML : si l'utilisateur n'est pas connecté,
-// rediriger vers /login.html pour toutes les requêtes .html sauf celles publiques.
-app.use((req, res, next) => {
-    try {
-        const url = req.path;
-        const publicHtml = ['/login.html', '/register.html', '/'];
-        if (url.endsWith('.html') && !publicHtml.includes(url)) {
-            if (!req.session || !req.session.user) {
-                return res.redirect('/login.html');
-            }
-        }
-    } catch (e) {
-        // ignore and continue
-    }
-    next();
-});
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Servir les ressources statiques (CSS/JS/images)
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use('/css', express.static(path.join(__dirname, 'css')));
-app.use('/js', express.static(path.join(__dirname, 'js')));
+app.use('/js', express.static(path.join(__dirname, 'public/js')));
 
-// Middleware d'authentification
-const requireAuth = (req, res, next) => {
-    if (req.session.user) {
-        next();
-    } else {
-        res.redirect('/login.html');
-    }
-};
-
-// Routes API
-app.post('/api/login', async (req, res) => {
-    const { username, password } = req.body;
-    try {
-        const user = await db.authenticateUser(username, password);
-        if (user) {
-            req.session.user = user;
-            res.json({ success: true });
-        } else {
-            res.status(401).json({ success: false, message: 'Identifiants invalides' });
-        }
-    } catch (error) {
-        res.status(500).json({ success: false, message: 'Erreur serveur' });
-    }
+// Route racine
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/api/projects', requireAuth, async (req, res) => {
-    try {
-        const projects = await db.getProjects(req.session.user.id);
-        res.json(projects);
-    } catch (error) {
-        res.status(500).json({ error: 'Erreur serveur' });
-    }
-});
+// Demo API Routes - Proxy to main OneSave API
+const API_URL = process.env.API_URL || 'http://localhost:5000/api';
 
-// Créer un nouveau projet
-app.post('/api/projects', requireAuth, async (req, res) => {
+app.post('/api/*', async (req, res) => {
     try {
-        const { title } = req.body;
-        if (!title || !title.trim()) return res.status(400).json({ error: 'Le titre est requis' });
-        const project = await db.createProject(req.session.user.id, req.body);
-        res.json(project);
-    } catch (error) {
-        res.status(500).json({ error: 'Erreur lors de la création du projet' });
-    }
-});
-
-// Mettre à jour un projet
-app.put('/api/projects/:id', requireAuth, async (req, res) => {
-    try {
-        const updated = await db.updateProject(req.params.id, req.body);
-        res.json(updated);
+        const endpoint = req.path.replace('/api/', '');
+        const response = await fetch(`${API_URL}/${endpoint}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': req.headers.authorization || ''
+            },
+            body: JSON.stringify(req.body)
+        });
+        const data = await response.json();
+        res.status(response.status).json(data);
     } catch (err) {
-        res.status(500).json({ error: 'Erreur lors de la mise à jour du projet' });
+        res.status(500).json({ error: err.message });
     }
 });
 
-// Supprimer un projet
-app.delete('/api/projects/:id', requireAuth, async (req, res) => {
+app.get('/api/*', async (req, res) => {
     try {
-        const result = await db.deleteProject(req.params.id);
-        res.json(result);
+        const endpoint = req.path.replace('/api/', '');
+        const response = await fetch(`${API_URL}/${endpoint}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': req.headers.authorization || ''
+            }
+        });
+        const data = await response.json();
+        res.status(response.status).json(data);
     } catch (err) {
-        res.status(500).json({ error: 'Erreur lors de la suppression du projet' });
+        res.status(500).json({ error: err.message });
     }
 });
 
-app.get('/api/events', requireAuth, async (req, res) => {
+app.delete('/api/*', async (req, res) => {
     try {
-        const events = await db.getEvents(req.query.projectId);
-        res.json(events);
-    } catch (error) {
-        res.status(500).json({ error: 'Erreur serveur' });
-    }
-});
-
-// Créer un nouvel événement
-app.post('/api/events', requireAuth, async (req, res) => {
-    try {
-        const { name, date } = req.body;
-        if (!name || !name.trim()) return res.status(400).json({ error: "Le nom de l'événement est requis" });
-        if (!date) return res.status(400).json({ error: "La date de l'événement est requise" });
-        const event = await db.createEvent(req.body);
-        res.json(event);
-    } catch (error) {
-        res.status(500).json({ error: 'Erreur lors de la création de l\'événement' });
-    }
-});
-
-// Mettre à jour un événement
-app.put('/api/events/:id', requireAuth, async (req, res) => {
-    try {
-        const updated = await db.updateEvent(req.params.id, req.body);
-        res.json(updated);
+        const endpoint = req.path.replace('/api/', '');
+        const response = await fetch(`${API_URL}/${endpoint}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': req.headers.authorization || ''
+            }
+        });
+        const data = await response.json();
+        res.status(response.status).json(data);
     } catch (err) {
-        res.status(500).json({ error: 'Erreur lors de la mise à jour de l\'événement' });
+        res.status(500).json({ error: err.message });
     }
 });
 
-// Supprimer un événement
-app.delete('/api/events/:id', requireAuth, async (req, res) => {
+app.put('/api/*', async (req, res) => {
     try {
-        const result = await db.deleteEvent(req.params.id);
-        res.json(result);
+        const endpoint = req.path.replace('/api/', '');
+        const response = await fetch(`${API_URL}/${endpoint}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': req.headers.authorization || ''
+            },
+            body: JSON.stringify(req.body)
+        });
+        const data = await response.json();
+        res.status(response.status).json(data);
     } catch (err) {
-        res.status(500).json({ error: 'Erreur lors de la suppression de l\'événement' });
+        res.status(500).json({ error: err.message });
     }
-});
-
-app.get('/api/reports', requireAuth, async (req, res) => {
-    try {
-        const reports = await db.getReports(req.query.projectId);
-        res.json(reports);
-    } catch (error) {
-        res.status(500).json({ error: 'Erreur serveur' });
-    }
-});
-
-// Créer un rapport
-app.post('/api/reports', requireAuth, async (req, res) => {
-    try {
-        const { title } = req.body;
-        if (!title || !title.trim()) return res.status(400).json({ error: 'Le titre est requis' });
-        const report = await db.createReport(req.body);
-        res.json(report);
-    } catch (err) {
-        res.status(500).json({ error: 'Erreur lors de la création du rapport' });
-    }
-});
-
-// Mettre à jour un rapport
-app.put('/api/reports/:id', requireAuth, async (req, res) => {
-    try {
-        const updated = await db.updateReport(req.params.id, req.body);
-        res.json(updated);
-    } catch (err) {
-        res.status(500).json({ error: 'Erreur lors de la mise à jour du rapport' });
-    }
-});
-
-// Supprimer un rapport
-app.delete('/api/reports/:id', requireAuth, async (req, res) => {
-    try {
-        const result = await db.deleteReport(req.params.id);
-        res.json(result);
-    } catch (err) {
-        res.status(500).json({ error: 'Erreur lors de la suppression du rapport' });
-    }
-});
-
-app.get('/api/statistics', requireAuth, async (req, res) => {
-    try {
-        const stats = await db.getStatistics(req.session.user.id);
-        res.json(stats);
-    } catch (error) {
-        res.status(500).json({ error: 'Erreur serveur' });
-    }
-});
-
-app.post('/api/logout', (req, res) => {
-    req.session.destroy();
-    res.json({ success: true });
 });
 
 // Démarrage du serveur
 app.listen(port, () => {
-    console.log(`Serveur démarré sur http://localhost:${port}`);
+    console.log(`\n✅ OneSave Demo Server démarré sur http://localhost:${port}`);
+    console.log(`📊 API URL: ${API_URL}`);
+    console.log('\n💡 Demo Credentials:');
+    console.log('   Email: demo@example.com');
+    console.log('   Mot de passe: demo123');
+    console.log('\n');
 });

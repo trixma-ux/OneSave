@@ -1,5 +1,13 @@
-/* Styles généraux */
+/* OneSave Demo Styles */
+
 :root {
+    --primary: #0d6efd;
+    --success: #198754;
+    --info: #0dcaf0;
+    --warning: #ffc107;
+    --danger: #dc3545;
+    --light: #f8f9fa;
+    --dark: #212529;
     --primary-color: #0d6efd;
     --secondary-color: #6c757d;
     --success-color: #198754;
@@ -12,6 +20,7 @@
 body {
     min-height: 100vh;
     background-color: var(--light-color);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Sidebar */
@@ -96,6 +105,135 @@ body {
     .main-content {
         margin-left: 0;
     }
+}
+
+/* Authentication */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 450px;
+    border-radius: 12px;
+}
+
+.auth-card .card-body {
+    padding: 40px;
+}
+
+/* App Enhancements */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+}
+
+#appView .card {
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#appView .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.card-title {
+    font-weight: 700;
+    color: #212529;
+    margin-bottom: 12px;
+}
+
+.card-text {
+    font-size: 0.95rem;
+    color: #6c757d;
+}
+
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+    padding: 8px 16px;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.badge {
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-weight: 600;
+    font-size: 0.85em;
+}
+
+.progress {
+    height: 8px;
+    border-radius: 4px;
+    background-color: #e9ecef;
+}
+
+.progress-bar {
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    border-radius: 4px;
+}
+
+h2 {
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.sticky-top {
+    z-index: 1020;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.nav-link.active {
+    background-color: var(--primary-color);
+    color: white !important;
+}
+
+.alert {
+    border-radius: 8px;
+    border: none;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card {
+    animation: slideIn 0.3s ease-out;
 }
 
 /* Animations */

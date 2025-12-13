@@ -22,6 +22,7 @@ model Utilisateur {
   projets           Projet[]
   evenements        Evenement[]
   notifications     Notification[]
+  collaborations    Collaboration[]
 
   @@map("utilisateurs")
 }
@@ -40,6 +41,7 @@ model Projet {
   utilisateur       Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
   evenements        Evenement[]
   moduleSpecifique  ModuleSpecifique?
+  collaborations    Collaboration[]
 
   @@map("projets")
 }
@@ -86,3 +88,17 @@ model ModuleSpecifique {
   @@map("modules_specifiques")
 }
 
+model Collaboration {
+  id                String      @id @default(cuid())
+  role              String      @default("collaborateur") // proprietaire, collaborateur, lecteur
+  statut            String      @default("acceptee") // en_attente, acceptee, refusee
+  projetId          String      @map("projet_id")
+  utilisateurId     String      @map("utilisateur_id")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+  projet            Projet      @relation(fields: [projetId], references: [id], onDelete: Cascade)
+  utilisateur       Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+
+  @@unique([projetId, utilisateurId])
+  @@map("collaborations")
+}

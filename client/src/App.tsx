@@ -11,6 +11,7 @@ import Projets from './pages/Projets';
 import ProjetDetail from './pages/ProjetDetail';
 import Evenements from './pages/Evenements';
 import Rapports from './pages/Rapports';
+import Collaborations from './pages/Collaborations';
 import Profile from './pages/Profile';
 import Layout from './components/Layout';
 
@@ -31,6 +32,7 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route path="*" element={<Navigate to="/login" replace />} />
           <Route
             path="/projets"
             element={
@@ -67,6 +69,16 @@ function App() {
               <PrivateRoute>
                 <Layout>
                   <Rapports />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/collaborations"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <Collaborations />
                 </Layout>
               </PrivateRoute>
             }

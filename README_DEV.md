@@ -89,8 +89,8 @@ npm start
 ### Se connecter
 
 **Admin par défaut :**
-- Email: `admin@example.com`
-- Mot de passe: `admin`
+- Email: `admin@cnf.ci`
+- Mot de passe: `admin123`
 
 **Créer nouveau compte :** Inscription sur la page login
 

@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
-import { PrismaClient } from '@prisma/client';
+import prisma from './utils/prisma';
 import authRoutes from './routes/auth.routes';
 import projetRoutes from './routes/projet.routes';
 import evenementRoutes from './routes/evenement.routes';
@@ -16,7 +16,6 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const prisma = new PrismaClient();
 const isDev = process.env.NODE_ENV === 'development';
 
 // Middleware
@@ -42,7 +41,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Initialisation de l'utilisateur admin au démarrage
-initializeAdminUser(prisma).catch(console.error);
+initializeAdminUser().catch(console.error);
 
 // Démarrer le planificateur de notifications
 startNotificationScheduler();
