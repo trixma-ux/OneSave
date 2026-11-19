@@ -23,7 +23,7 @@
   "theme_color": "#2563eb",
   "background_color": "#ffffff",
   "orientation": "portrait-primary",
-  "scope": "/",
+  "scope": ".",
   "description": "Application web locale pour la gestion de projets et événements - Campus Numérique Francophone"
 }
 
