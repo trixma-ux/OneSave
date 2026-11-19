@@ -14,7 +14,7 @@
     "setup:db:prod": "cross-env NODE_ENV=production node scripts/setup-db.js",
     "test": "jest --passWithNoTests",
     "test:e2e": "jest --config jest-e2e.config.js --runInBand",
-    "test:db:push": "prisma db push --skip-generate"
+    "prisma:deploy": "prisma migrate deploy"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",

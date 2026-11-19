@@ -39,8 +39,8 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
-# Prisma
-server/prisma/migrations/
+# Prisma (les migrations sont versionnées)
+server/prisma/*.db
 
 # Testing
 coverage/

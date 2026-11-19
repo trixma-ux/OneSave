@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  // Support both SQLite (dev) and PostgreSQL (prod)
-  provider = "sqlite"
+  // PostgreSQL (Neon en production, conteneur Postgres en CI/local)
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

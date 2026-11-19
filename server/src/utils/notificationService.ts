@@ -151,16 +151,40 @@ export async function checkEvenementsProchains() {
   }
 }
 
+const CHECK_INTERVAL_MS = 60 * 60 * 1000; // 1 heure
+let lastCheckAt = 0;
+let checkInProgress = false;
+
+/**
+ * Lance les vérifications si la dernière date de plus d'une heure.
+ * Tolère la mise en veille de l'instance gratuite : appelé au démarrage
+ * (réveil), par le minuteur et sur les requêtes entrantes. Les doublons
+ * sont évités par les contrôles d'existence dans chaque vérification.
+ */
+export async function runNotificationChecksIfDue(force = false): Promise<void> {
+  const now = Date.now();
+  if (checkInProgress || (!force && now - lastCheckAt < CHECK_INTERVAL_MS)) return;
+  checkInProgress = true;
+  lastCheckAt = now;
+  try {
+    await checkProjetEcheances();
+    await checkEvenementsProchains();
+  } catch (error) {
+    console.error('Erreur du planificateur de notifications:', error);
+  } finally {
+    checkInProgress = false;
+  }
+}
+
 // Planifier les vérifications périodiques
 export function startNotificationScheduler() {
-  // Vérifier toutes les heures
-  setInterval(() => {
-    checkProjetEcheances();
-    checkEvenementsProchains();
-  }, 60 * 60 * 1000); // 1 heure
+  const timer = setInterval(() => {
+    void runNotificationChecksIfDue();
+  }, CHECK_INTERVAL_MS);
+  // Ne pas empêcher l'arrêt du processus
+  if (typeof timer.unref === 'function') timer.unref();
 
-  // Vérifier immédiatement au démarrage
-  checkProjetEcheances();
-  checkEvenementsProchains();
+  // Vérifier immédiatement au démarrage / au réveil
+  void runNotificationChecksIfDue(true);
 }
 

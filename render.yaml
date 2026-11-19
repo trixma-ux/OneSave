@@ -1,0 +1,31 @@
+# Render Blueprint : API OneSave (plan gratuit) + base Neon (PostgreSQL)
+# Frontend officiel : https://trixma-ux.github.io/OneSave/ (GitHub Pages)
+services:
+  - type: web
+    name: onesave-api
+    runtime: node
+    plan: free
+    region: frankfurt
+    branch: main
+    rootDir: server
+    buildCommand: npm ci && npx prisma generate && npm run build
+    startCommand: npx prisma migrate deploy && node dist/index.js
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "20"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DEFAULT_ADMIN_EMAIL
+        sync: false
+      - key: DEFAULT_ADMIN_PASSWORD
+        sync: false
+      # Chaîne de connexion Neon (connexion directe, non poolée), ex. :
+      # postgresql://USER:PASSWORD@ep-xxx.eu-central-1.aws.neon.tech/onesave?sslmode=require
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGIN
+        value: https://trixma-ux.github.io

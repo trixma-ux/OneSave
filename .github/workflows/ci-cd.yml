@@ -7,9 +7,7 @@ on:
     branches: [ main, develop ]
 
 env:
-  # SQLite paths are resolved relative to server/prisma/schema.prisma
-  # => this points to server/prisma/test.db
-  DATABASE_URL: "file:./test.db"
+  DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/onesave_test?schema=public"
   JWT_SECRET: "test-secret-key-ci"
   NODE_ENV: "test"
 
@@ -17,6 +15,21 @@ jobs:
   # Test Backend
   test-backend:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: onesave_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
 
     strategy:
       matrix:
@@ -40,9 +53,9 @@ jobs:
       working-directory: ./server
       run: npx prisma generate
 
-    - name: Create test database schema
+    - name: Apply database migrations
       working-directory: ./server
-      run: npx prisma db push --skip-generate
+      run: npx prisma migrate deploy
 
     - name: Build server
       working-directory: ./server
@@ -84,52 +97,5 @@ jobs:
         name: client-build
         path: client/build/
 
-  # Deploy to Railway (Backend) - skipped until RAILWAY_TOKEN is configured
-  deploy-backend:
-    needs: [test-backend]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    env:
-      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-
-    steps:
-    - uses: actions/checkout@v4
-      if: env.RAILWAY_TOKEN != ''
-      with:
-        fetch-depth: 0
-
-    - name: Deploy to Railway
-      if: env.RAILWAY_TOKEN != ''
-      run: |
-        npm i -g @railway/cli
-        railway link ${{ secrets.RAILWAY_PROJECT_ID }}
-        railway up --service backend
-        # Run migrations on deployed database
-        railway run "cd server && npx prisma migrate deploy"
-
-    - name: Skip notice
-      if: env.RAILWAY_TOKEN == ''
-      run: echo "RAILWAY_TOKEN not set - backend deploy skipped."
-
-  # Deploy to Vercel (Frontend) - skipped until VERCEL_TOKEN is configured
-  deploy-frontend:
-    needs: [build-frontend]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    env:
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-
-    steps:
-    - uses: actions/checkout@v4
-      if: env.VERCEL_TOKEN != ''
-
-    - name: Deploy to Vercel
-      if: env.VERCEL_TOKEN != ''
-      run: |
-        npm i -g vercel
-        vercel --prod --token $VERCEL_TOKEN \
-          -e REACT_APP_API_URL=${{ secrets.API_URL }}
-
-    - name: Skip notice
-      if: env.VERCEL_TOKEN == ''
-      run: echo "VERCEL_TOKEN not set - frontend deploy skipped."
+  # Déploiements : backend sur Render (render.yaml, auto-deploy depuis main),
+  # frontend sur GitHub Pages (deploy-web.yml). Jobs Railway/Vercel retirés.

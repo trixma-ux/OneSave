@@ -11,7 +11,7 @@ import moduleRoutes from './routes/module.routes';
 import rapportRoutes from './routes/rapport.routes';
 import { initializeAdminUser } from './utils/initAdmin';
 import { assertProductionConfig } from './utils/config';
-import { startNotificationScheduler } from './utils/notificationService';
+import { startNotificationScheduler, runNotificationChecksIfDue } from './utils/notificationService';
 
 dotenv.config();
 
@@ -19,9 +19,37 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const isDev = process.env.NODE_ENV === 'development';
 
+// CORS : origines autorisées via CORS_ORIGIN (liste séparée par des virgules).
+// Par défaut : GitHub Pages + développement local.
+const allowedOrigins = (process.env.CORS_ORIGIN || 'https://trixma-ux.github.io,http://localhost:3000')
+  .split(',')
+  .map((o) => o.trim().replace(/\/+$/, ''))
+  .filter(Boolean);
+
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Requêtes sans Origin (curl, health checks Render) ou origine autorisée
+      if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
+
+// Instance gratuite Render : le processus dort après 15 min d'inactivité,
+// donc setInterval ne suffit pas. On relance aussi les vérifications de
+// notifications (au plus 1 fois/heure) au réveil, sur les requêtes entrantes.
+app.use('/api', (req, _res, next) => {
+  if (process.env.NODE_ENV !== 'test') {
+    runNotificationChecksIfDue();
+  }
+  next();
+});
 
 // Routes
 app.use('/api/auth', authRoutes);

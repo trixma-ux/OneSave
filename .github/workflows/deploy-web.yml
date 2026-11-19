@@ -35,6 +35,9 @@ jobs:
         env:
           CI: 'false'
           PUBLIC_URL: /OneSave
+          # URL de l'API Render, ex. https://onesave-api.onrender.com/api
+          # (Settings > Secrets and variables > Actions > Variables)
+          REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }}
         run: npm run build
 
       - name: Prepare SPA fallback

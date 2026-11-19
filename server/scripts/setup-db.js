@@ -2,8 +2,8 @@
 
 /**
  * Script pour initialiser la base de données selon l'environnement
- * - Development: SQLite (local)
- * - Production: PostgreSQL (Railway/Render/etc)
+ * - Development: PostgreSQL local (DATABASE_URL requis)
+ * - Production: PostgreSQL (Neon / Render)
  * 
  * Usage:
  * npm run setup:db:dev    # Setup local SQLite
@@ -24,18 +24,12 @@ try {
   console.log('\n📦 Generating Prisma Client...');
   execSync('npx prisma generate', { stdio: 'inherit' });
 
-  // Step 2: For development, create SQLite if not exists
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL (PostgreSQL) est requis');
+  }
   if (isDev) {
-    console.log('\n💾 Setting up SQLite database (development)...');
-    const dbPath = path.join(__dirname, '../prisma/dev.db');
-    if (!fs.existsSync(dbPath)) {
-      console.log('Creating dev.db...');
-    }
-    // Prisma migrate dev will create the DB
-    execSync('npx prisma migrate dev --name initial-schema', { 
-      stdio: 'inherit',
-      env: { ...process.env, DATABASE_URL: 'file:./prisma/dev.db' }
-    });
+    console.log('\n💾 Applying migrations (development)...');
+    execSync('npx prisma migrate dev', { stdio: 'inherit' });
   } else {
     // Step 3: For production, apply migrations to remote database
     console.log('\n🚀 Applying migrations to production database...');
