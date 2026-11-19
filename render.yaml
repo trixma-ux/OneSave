@@ -8,7 +8,8 @@ services:
     region: frankfurt
     branch: main
     rootDir: server
-    buildCommand: npm ci && npx prisma generate && npm run build
+    # --include=dev : prisma/typescript sont en devDependencies et NODE_ENV=production
+    buildCommand: npm ci --include=dev && npx prisma generate && npm run build
     startCommand: npx prisma migrate deploy && node dist/index.js
     healthCheckPath: /api/health
     autoDeploy: true
