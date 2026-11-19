@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { getJwtSecret } from '../utils/config';
 
 export interface AuthRequest extends Request {
   userId?: string;
@@ -18,7 +19,7 @@ export const authenticateToken = (
     return res.status(401).json({ message: 'Token d\'authentification manquant' });
   }
 
-  jwt.verify(token, process.env.JWT_SECRET || 'secret', (err: any, user: any) => {
+  jwt.verify(token, getJwtSecret(), (err: any, user: any) => {
     if (err) {
       return res.status(403).json({ message: 'Token invalide ou expiré' });
     }

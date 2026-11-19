@@ -32,9 +32,6 @@ const Login: React.FC = () => {
     }
   };
 
-  const defaultAdminEmail = process.env.REACT_APP_DEFAULT_ADMIN_EMAIL || 'admin@cnf.ci';
-  const defaultAdminPassword = process.env.REACT_APP_DEFAULT_ADMIN_PASSWORD || 'admin123';
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-lg">
@@ -107,12 +104,6 @@ const Login: React.FC = () => {
           >
             {loading ? 'Connexion...' : 'Se connecter'}
           </button>
-
-          <div className="bg-blue-50 p-4 rounded-md border border-blue-200">
-            <p className="text-xs text-gray-600 font-semibold mb-2">📝 Compte de démonstration:</p>
-            <p className="text-xs text-gray-600">Email: <span className="font-mono font-bold">{defaultAdminEmail}</span></p>
-            <p className="text-xs text-gray-600">Mot de passe: <span className="font-mono font-bold">{defaultAdminPassword}</span></p>
-          </div>
         </form>
       </div>
     </div>

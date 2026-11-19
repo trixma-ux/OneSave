@@ -10,6 +10,7 @@ import notificationRoutes from './routes/notification.routes';
 import moduleRoutes from './routes/module.routes';
 import rapportRoutes from './routes/rapport.routes';
 import { initializeAdminUser } from './utils/initAdmin';
+import { assertProductionConfig } from './utils/config';
 import { startNotificationScheduler } from './utils/notificationService';
 
 dotenv.config();
@@ -63,6 +64,9 @@ if (!isDev) {
 // (node dist/index.js, nodemon/ts-node). Quand les tests importent `app`,
 // on ne lance ni listen() (évite EADDRINUSE :5000), ni le scheduler, ni l'init admin.
 export function startServer() {
+// Fail fast : JWT_SECRET obligatoire hors development/test
+assertProductionConfig();
+
 // Initialisation de l'utilisateur admin au démarrage
 initializeAdminUser().catch(console.error);
 

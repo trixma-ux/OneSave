@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { authenticateToken, AuthRequest } from '../middleware/auth.middleware';
 import prisma from '../utils/prisma';
+import { getJwtSecret } from '../utils/config';
 
 const router = express.Router();
 
@@ -31,7 +32,7 @@ router.post('/login', async (req, res) => {
 
     const token = jwt.sign(
       { userId: utilisateur.id, role: utilisateur.role },
-      process.env.JWT_SECRET || 'secret',
+      getJwtSecret(),
       { expiresIn: '7d' }
     );
 
@@ -80,7 +81,7 @@ router.post('/register', async (req, res) => {
 
     const token = jwt.sign(
       { userId: utilisateur.id, role: utilisateur.role },
-      process.env.JWT_SECRET || 'secret',
+      getJwtSecret(),
       { expiresIn: '7d' }
     );
 
