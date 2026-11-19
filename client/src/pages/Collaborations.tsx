@@ -7,6 +7,7 @@ import {
   UserGroupIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-toastify';
+import { ValidatedForm, FieldError } from '../components/ValidatedForm';
 
 interface Projet {
   id: string;
@@ -295,12 +296,12 @@ const Collaborations: React.FC = () => {
             <h3 className="text-lg font-medium text-gray-900 mb-4">
               Inviter un utilisateur
             </h3>
-            <form onSubmit={handleSendInvite} className="space-y-4">
+            <ValidatedForm onValidSubmit={handleSendInvite} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Email de l'utilisateur
                 </label>
-                <input
+                <input name="inviteEmail"
                   type="email"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
@@ -309,6 +310,7 @@ const Collaborations: React.FC = () => {
                   required
                   disabled={inviting}
                 />
+              <FieldError name="inviteEmail" />
               </div>
               <div className="flex space-x-3">
                 <button
@@ -330,7 +332,7 @@ const Collaborations: React.FC = () => {
                   {inviting ? 'Envoi en cours...' : 'Envoyer invitation'}
                 </button>
               </div>
-            </form>
+            </ValidatedForm>
           </div>
         </div>
       )}

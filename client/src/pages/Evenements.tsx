@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-toastify';
+import { ValidatedForm, FieldError } from '../components/ValidatedForm';
 
 interface Evenement {
   id: string;
@@ -222,7 +223,7 @@ const Evenements: React.FC = () => {
               onClick={() => setShowModal(false)}
             ></div>
             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <form onSubmit={handleSubmit}>
+              <ValidatedForm onValidSubmit={handleSubmit}>
                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
                     {editingEvenement ? 'Modifier l\'événement' : 'Nouvel événement'}
@@ -233,6 +234,7 @@ const Evenements: React.FC = () => {
                         Nom *
                       </label>
                       <input
+                        name="nom"
                         type="text"
                         required
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -241,12 +243,14 @@ const Evenements: React.FC = () => {
                           setFormData({ ...formData, nom: e.target.value })
                         }
                       />
+                      <FieldError name="nom" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
                         Date et heure *
                       </label>
                       <input
+                        name="date"
                         type="datetime-local"
                         required
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -255,12 +259,14 @@ const Evenements: React.FC = () => {
                           setFormData({ ...formData, date: e.target.value })
                         }
                       />
+                      <FieldError name="date" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
                         Projet (optionnel)
                       </label>
                       <select
+                        name="projetId"
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         value={formData.projetId}
                         onChange={(e) =>
@@ -274,12 +280,14 @@ const Evenements: React.FC = () => {
                           </option>
                         ))}
                       </select>
+                      <FieldError name="projetId" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
                         Description
                       </label>
                       <textarea
+                        name="description"
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         rows={3}
                         value={formData.description}
@@ -287,6 +295,7 @@ const Evenements: React.FC = () => {
                           setFormData({ ...formData, description: e.target.value })
                         }
                       />
+                      <FieldError name="description" />
                     </div>
                   </div>
                 </div>
@@ -305,7 +314,7 @@ const Evenements: React.FC = () => {
                     Annuler
                   </button>
                 </div>
-              </form>
+              </ValidatedForm>
             </div>
           </div>
         </div>

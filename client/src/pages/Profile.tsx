@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { toast } from 'react-toastify';
+import { ValidatedForm, FieldError } from '../components/ValidatedForm';
 
 const Profile: React.FC = () => {
   const { user } = useAuth();
@@ -114,7 +115,15 @@ const Profile: React.FC = () => {
               onClick={() => setShowPasswordModal(false)}
             ></div>
             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <form onSubmit={handleChangePassword}>
+              <ValidatedForm
+                onValidSubmit={handleChangePassword}
+                extraValidate={() =>
+                  passwordData.confirmMotDePasse &&
+                  passwordData.nouveauMotDePasse !== passwordData.confirmMotDePasse
+                    ? { confirmMotDePasse: 'Les mots de passe ne correspondent pas' }
+                    : {}
+                }
+              >
                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
                     Changer le mot de passe
@@ -125,6 +134,7 @@ const Profile: React.FC = () => {
                         Ancien mot de passe *
                       </label>
                       <input
+                        name="ancienMotDePasse"
                         type="password"
                         required
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -136,12 +146,14 @@ const Profile: React.FC = () => {
                           })
                         }
                       />
+                      <FieldError name="ancienMotDePasse" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
                         Nouveau mot de passe *
                       </label>
                       <input
+                        name="nouveauMotDePasse"
                         type="password"
                         required
                         minLength={6}
@@ -154,12 +166,14 @@ const Profile: React.FC = () => {
                           })
                         }
                       />
+                      <FieldError name="nouveauMotDePasse" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
                         Confirmer le nouveau mot de passe *
                       </label>
                       <input
+                        name="confirmMotDePasse"
                         type="password"
                         required
                         minLength={6}
@@ -172,6 +186,7 @@ const Profile: React.FC = () => {
                           })
                         }
                       />
+                      <FieldError name="confirmMotDePasse" />
                     </div>
                   </div>
                 </div>
@@ -191,7 +206,7 @@ const Profile: React.FC = () => {
                     Annuler
                   </button>
                 </div>
-              </form>
+              </ValidatedForm>
             </div>
           </div>
         </div>

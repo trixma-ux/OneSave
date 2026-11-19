@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { TrashIcon, PlusIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-toastify';
+import { ValidatedForm, FieldError } from '../components/ValidatedForm';
 
 interface Projet {
   id: string;
@@ -349,7 +350,7 @@ const ProjetDetail: React.FC = () => {
               onClick={() => setShowEventModal(false)}
             ></div>
             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <form onSubmit={handleCreateEvent}>
+              <ValidatedForm onValidSubmit={handleCreateEvent}>
                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
                     Nouvel événement
@@ -360,6 +361,7 @@ const ProjetDetail: React.FC = () => {
                         Nom *
                       </label>
                       <input
+                        name="nom"
                         type="text"
                         required
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -368,12 +370,14 @@ const ProjetDetail: React.FC = () => {
                           setEventFormData({ ...eventFormData, nom: e.target.value })
                         }
                       />
+                      <FieldError name="nom" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
                         Date et heure *
                       </label>
                       <input
+                        name="date"
                         type="datetime-local"
                         required
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -382,12 +386,14 @@ const ProjetDetail: React.FC = () => {
                           setEventFormData({ ...eventFormData, date: e.target.value })
                         }
                       />
+                      <FieldError name="date" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
                         Description
                       </label>
                       <textarea
+                        name="description"
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         rows={3}
                         value={eventFormData.description}
@@ -395,6 +401,7 @@ const ProjetDetail: React.FC = () => {
                           setEventFormData({ ...eventFormData, description: e.target.value })
                         }
                       />
+                      <FieldError name="description" />
                     </div>
                   </div>
                 </div>
@@ -413,7 +420,7 @@ const ProjetDetail: React.FC = () => {
                     Annuler
                   </button>
                 </div>
-              </form>
+              </ValidatedForm>
             </div>
           </div>
         </div>
@@ -428,7 +435,7 @@ const ProjetDetail: React.FC = () => {
               onClick={() => setShowModuleModal(false)}
             ></div>
             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <form onSubmit={handleCreateModule}>
+              <ValidatedForm onValidSubmit={handleCreateModule}>
                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
                     Nouveau module spécifique
@@ -439,6 +446,7 @@ const ProjetDetail: React.FC = () => {
                         Nom du module *
                       </label>
                       <input
+                        name="nomModule"
                         type="text"
                         required
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -447,12 +455,14 @@ const ProjetDetail: React.FC = () => {
                           setModuleFormData({ ...moduleFormData, nomModule: e.target.value })
                         }
                       />
+                      <FieldError name="nomModule" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
                         Type de programme *
                       </label>
                       <select
+                        name="typeProgramme"
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         value={moduleFormData.typeProgramme}
                         onChange={(e) =>
@@ -463,12 +473,14 @@ const ProjetDetail: React.FC = () => {
                         <option value="IFADEM">IFADEM</option>
                         <option value="GAF">GAF</option>
                       </select>
+                      <FieldError name="typeProgramme" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
                         Détails
                       </label>
                       <textarea
+                        name="details"
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         rows={3}
                         value={moduleFormData.details}
@@ -476,6 +488,7 @@ const ProjetDetail: React.FC = () => {
                           setModuleFormData({ ...moduleFormData, details: e.target.value })
                         }
                       />
+                      <FieldError name="details" />
                     </div>
                   </div>
                 </div>
@@ -494,7 +507,7 @@ const ProjetDetail: React.FC = () => {
                     Annuler
                   </button>
                 </div>
-              </form>
+              </ValidatedForm>
             </div>
           </div>
         </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { EnvelopeIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import { ValidatedForm, FieldError } from '../components/ValidatedForm';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -54,7 +55,7 @@ const Login: React.FC = () => {
           </div>
         )}
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <ValidatedForm className="mt-8 space-y-6" onValidSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -73,6 +74,7 @@ const Login: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
+                <FieldError name="email" />
               </div>
             </div>
 
@@ -93,6 +95,7 @@ const Login: React.FC = () => {
                   value={motDePasse}
                   onChange={(e) => setMotDePasse(e.target.value)}
                 />
+                <FieldError name="motDePasse" />
               </div>
             </div>
           </div>
@@ -104,7 +107,7 @@ const Login: React.FC = () => {
           >
             {loading ? 'Connexion...' : 'Se connecter'}
           </button>
-        </form>
+        </ValidatedForm>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import api from '../services/api';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-toastify';
+import { ValidatedForm, FieldError } from '../components/ValidatedForm';
 
 interface Projet {
   id: string;
@@ -251,7 +252,14 @@ const Projets: React.FC = () => {
               onClick={() => setShowModal(false)}
             ></div>
             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <form onSubmit={handleSubmit}>
+              <ValidatedForm
+                onValidSubmit={handleSubmit}
+                extraValidate={() =>
+                  formData.dateFin && formData.dateDebut && formData.dateFin < formData.dateDebut
+                    ? { dateFin: 'La date de fin doit être postérieure à la date de début' }
+                    : {}
+                }
+              >
                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
                     {editingProjet ? 'Modifier le projet' : 'Nouveau projet'}
@@ -262,6 +270,7 @@ const Projets: React.FC = () => {
                         Titre *
                       </label>
                       <input
+                        name="titre"
                         type="text"
                         required
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -270,12 +279,14 @@ const Projets: React.FC = () => {
                           setFormData({ ...formData, titre: e.target.value })
                         }
                       />
+                      <FieldError name="titre" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
                         Description
                       </label>
                       <textarea
+                        name="description"
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         rows={3}
                         value={formData.description}
@@ -283,6 +294,7 @@ const Projets: React.FC = () => {
                           setFormData({ ...formData, description: e.target.value })
                         }
                       />
+                      <FieldError name="description" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -290,6 +302,7 @@ const Projets: React.FC = () => {
                           Date de début *
                         </label>
                         <input
+                          name="dateDebut"
                           type="date"
                           required
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -298,12 +311,14 @@ const Projets: React.FC = () => {
                             setFormData({ ...formData, dateDebut: e.target.value })
                           }
                         />
+                        <FieldError name="dateDebut" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700">
                           Date de fin
                         </label>
                         <input
+                          name="dateFin"
                           type="date"
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           value={formData.dateFin}
@@ -311,6 +326,7 @@ const Projets: React.FC = () => {
                             setFormData({ ...formData, dateFin: e.target.value })
                           }
                         />
+                        <FieldError name="dateFin" />
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -319,6 +335,7 @@ const Projets: React.FC = () => {
                           Statut
                         </label>
                         <select
+                          name="statut"
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           value={formData.statut}
                           onChange={(e) =>
@@ -330,12 +347,14 @@ const Projets: React.FC = () => {
                           <option value="termine">Terminé</option>
                           <option value="annule">Annulé</option>
                         </select>
+                        <FieldError name="statut" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700">
                           Avancement (%)
                         </label>
                         <input
+                          name="pourcentageAvancement"
                           type="number"
                           min="0"
                           max="100"
@@ -348,6 +367,7 @@ const Projets: React.FC = () => {
                             })
                           }
                         />
+                        <FieldError name="pourcentageAvancement" />
                       </div>
                     </div>
                   </div>
@@ -367,7 +387,7 @@ const Projets: React.FC = () => {
                     Annuler
                   </button>
                 </div>
-              </form>
+              </ValidatedForm>
             </div>
           </div>
         </div>

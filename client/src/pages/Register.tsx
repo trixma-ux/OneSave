@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { UserIcon, EnvelopeIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import { ValidatedForm, FieldError } from '../components/ValidatedForm';
 
 const Register: React.FC = () => {
   const [nom, setNom] = useState('');
@@ -77,7 +78,15 @@ const Register: React.FC = () => {
           </div>
         )}
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <ValidatedForm
+          className="mt-8 space-y-6"
+          onValidSubmit={handleSubmit}
+          extraValidate={() =>
+            confirmMotDePasse && motDePasse !== confirmMotDePasse
+              ? { confirmMotDePasse: 'Les mots de passe ne correspondent pas' }
+              : {}
+          }
+        >
           <div className="space-y-4">
             <div>
               <label htmlFor="nom" className="block text-sm font-medium text-gray-700">
@@ -95,6 +104,7 @@ const Register: React.FC = () => {
                   value={nom}
                   onChange={(e) => setNom(e.target.value)}
                 />
+                <FieldError name="nom" />
               </div>
             </div>
 
@@ -115,6 +125,7 @@ const Register: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
+                <FieldError name="email" />
               </div>
             </div>
 
@@ -130,11 +141,13 @@ const Register: React.FC = () => {
                   type="password"
                   autoComplete="new-password"
                   required
+                  minLength={6}
                   className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="••••••••"
                   value={motDePasse}
                   onChange={(e) => setMotDePasse(e.target.value)}
                 />
+                <FieldError name="motDePasse" />
               </div>
               <p className="mt-1 text-xs text-gray-500">Au moins 6 caractères</p>
             </div>
@@ -158,8 +171,9 @@ const Register: React.FC = () => {
                   value={confirmMotDePasse}
                   onChange={(e) => setConfirmMotDePasse(e.target.value)}
                 />
+                <FieldError name="confirmMotDePasse" />
               </div>
-              {!passwordMatch && confirmMotDePasse && (
+              {!passwordMatch && confirmMotDePasse && motDePasse.length >= 6 && (
                 <p className="mt-1 text-xs text-red-600">Les mots de passe ne correspondent pas</p>
               )}
             </div>
@@ -167,7 +181,7 @@ const Register: React.FC = () => {
 
           <button
             type="submit"
-            disabled={loading || !passwordMatch}
+            disabled={loading}
             className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
             {loading ? 'Inscription...' : 'S\'inscrire'}
@@ -176,7 +190,7 @@ const Register: React.FC = () => {
           <div className="bg-green-50 p-4 rounded-md border border-green-200">
             <p className="text-xs text-gray-600"><span className="font-semibold">💡 Astuce:</span> Créez autant de comptes que vous le souhaitez pour tester la collaboration!</p>
           </div>
-        </form>
+        </ValidatedForm>
       </div>
     </div>
   );
