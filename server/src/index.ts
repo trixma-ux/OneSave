@@ -40,12 +40,6 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Initialisation de l'utilisateur admin au démarrage
-initializeAdminUser().catch(console.error);
-
-// Démarrer le planificateur de notifications
-startNotificationScheduler();
-
 // Serve static files from React build in production
 // This allows a single Express server to serve both API and frontend
 if (!isDev) {
@@ -65,8 +59,17 @@ if (!isDev) {
   console.log(`📁 Serving static files from: ${buildPath}`);
 }
 
-// Démarrage du serveur
-app.listen(PORT, () => {
+// Démarrage du serveur uniquement si ce fichier est le point d'entrée
+// (node dist/index.js, nodemon/ts-node). Quand les tests importent `app`,
+// on ne lance ni listen() (évite EADDRINUSE :5000), ni le scheduler, ni l'init admin.
+export function startServer() {
+// Initialisation de l'utilisateur admin au démarrage
+initializeAdminUser().catch(console.error);
+
+// Démarrer le planificateur de notifications
+startNotificationScheduler();
+
+return app.listen(PORT, () => {
   console.log(`\n🚀 OneSave Server Started`);
   console.log(`  📊 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`  🔗 API URL: http://localhost:${PORT}/api`);
@@ -77,6 +80,11 @@ app.listen(PORT, () => {
   console.log(`🔔 Service de notifications activé`);
   console.log('');
 });
+}
+
+if (require.main === module) {
+  startServer();
+}
 
 // Gestion de l'arrêt propre
 process.on('SIGINT', async () => {

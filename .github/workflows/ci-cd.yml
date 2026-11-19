@@ -7,7 +7,9 @@ on:
     branches: [ main, develop ]
 
 env:
-  DATABASE_URL: "file:./prisma/test.db"
+  # SQLite paths are resolved relative to server/prisma/schema.prisma
+  # => this points to server/prisma/test.db
+  DATABASE_URL: "file:./test.db"
   JWT_SECRET: "test-secret-key-ci"
   NODE_ENV: "test"
 
@@ -15,30 +17,32 @@ jobs:
   # Test Backend
   test-backend:
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [20.x, 22.x]
 
     steps:
-    - uses: actions/checkout@v3
-    
+    - uses: actions/checkout@v4
+
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-
-    - name: Install root dependencies
-      run: npm ci
+        cache-dependency-path: server/package-lock.json
 
     - name: Install server dependencies
       working-directory: ./server
       run: npm ci
 
-    - name: Install client dependencies
-      working-directory: ./client
-      run: npm ci
+    - name: Generate Prisma client
+      working-directory: ./server
+      run: npx prisma generate
+
+    - name: Create test database schema
+      working-directory: ./server
+      run: npx prisma db push --skip-generate
 
     - name: Build server
       working-directory: ./server
@@ -57,41 +61,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Use Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
-        node-version: '18.x'
+        node-version: '20.x'
         cache: 'npm'
+        cache-dependency-path: client/package-lock.json
 
     - name: Install dependencies
-      run: npm ci && cd client && npm ci && cd ..
+      working-directory: ./client
+      run: npm ci
 
     - name: Build client
       working-directory: ./client
       run: npm run build
 
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: client-build
         path: client/build/
 
-  # Deploy to Railway (Backend)
+  # Deploy to Railway (Backend) - skipped until RAILWAY_TOKEN is configured
   deploy-backend:
     needs: [test-backend]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
-    
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+      if: env.RAILWAY_TOKEN != ''
       with:
         fetch-depth: 0
 
     - name: Deploy to Railway
-      env:
-        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      if: env.RAILWAY_TOKEN != ''
       run: |
         npm i -g @railway/cli
         railway link ${{ secrets.RAILWAY_PROJECT_ID }}
@@ -99,19 +107,29 @@ jobs:
         # Run migrations on deployed database
         railway run "cd server && npx prisma migrate deploy"
 
-  # Deploy to Vercel (Frontend)
+    - name: Skip notice
+      if: env.RAILWAY_TOKEN == ''
+      run: echo "RAILWAY_TOKEN not set - backend deploy skipped."
+
+  # Deploy to Vercel (Frontend) - skipped until VERCEL_TOKEN is configured
   deploy-frontend:
     needs: [build-frontend]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+      if: env.VERCEL_TOKEN != ''
 
     - name: Deploy to Vercel
-      env:
-        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      if: env.VERCEL_TOKEN != ''
       run: |
         npm i -g vercel
         vercel --prod --token $VERCEL_TOKEN \
           -e REACT_APP_API_URL=${{ secrets.API_URL }}
+
+    - name: Skip notice
+      if: env.VERCEL_TOKEN == ''
+      run: echo "VERCEL_TOKEN not set - frontend deploy skipped."
