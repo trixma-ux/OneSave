@@ -1,8 +1,8 @@
 name: Deploy to GitHub Pages
 
+# Disabled on push: conflicts with deploy-web.yml (gh-pages branch via peaceiris)
+# and uploads the raw repo root instead of the built client.
 on:
-  push:
-    branches: ["main"]
   workflow_dispatch:
 
 permissions:

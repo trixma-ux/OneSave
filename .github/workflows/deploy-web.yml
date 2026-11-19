@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: true
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -28,10 +32,19 @@ jobs:
 
       - name: Build client
         working-directory: client
+        env:
+          CI: 'false'
+          PUBLIC_URL: /OneSave
         run: npm run build
+
+      - name: Prepare SPA fallback
+        run: |
+          cp client/build/index.html client/build/404.html
+          touch client/build/.nojekyll
 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./client/build
+          publish_branch: gh-pages
